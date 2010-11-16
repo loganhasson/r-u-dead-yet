@@ -1,4 +1,4 @@
-#summary R.U.D.Y HOWTO
+#summary This is where you will learn how to run R-U-Dead-Yet
 
 = Introduction =
 
