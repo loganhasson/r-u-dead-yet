@@ -1,4 +1,4 @@
-#R.U.D.Y HOWTO
+#summary R.U.D.Y HOWTO
 
 = Introduction =
 
