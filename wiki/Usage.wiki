@@ -7,6 +7,9 @@ R-U-Dead-Yet is works in one of two modes:
  # Interactive menu mode
  # Unattended configuration-based execution
 
+It supports the usage of SOCKS proxies to mask the attacker,
+and keeps session persistence using cookies, if available.
+
 = Requirements =
 
 R.U.D.Y requires the following includes to be present under the same directory:
