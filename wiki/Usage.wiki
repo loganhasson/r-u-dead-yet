@@ -7,6 +7,13 @@ R-U-Dead-Yet is works in one of two modes:
  # Interactive menu mode
  # Unattended configuration-based execution
 
+= Requirements =
+
+R.U.D.Y requires the following includes to be present under the same directory:
+
+http://http://www.crummy.com/software/BeautifulSoup
+
+http://socksipy.sourceforge.net
 
 = Details =
 
@@ -20,7 +27,7 @@ In the unattended mode, you will need to place a file called:
 
 rudeadyet.conf
 
-in the same directory as the code (BeautifulSoup.py is also required).
+in the same directory as the code.
 The file should look like this:
 
 {{{[parameters]}}}
@@ -31,6 +38,10 @@ The file should look like this:
 
 {{{attack_parameter: login}}}
 
+{{{proxy_addr: login}}}
+
+{{{proxy_port: login}}}
+
 Whereas:
 
 *URL* = POST URL
@@ -38,3 +49,7 @@ Whereas:
 *number_of_connections* = concurrent processes to execute
 
 *attack_parameter* = POST parameter to fuzz
+
+*proxy_addr* = SOCKS4 proxy IP address
+
+*proxy_port* = SOCKS4 proxy TCP port
