@@ -41,9 +41,9 @@ The file should look like this:
 
 {{{attack_parameter: login}}}
 
-{{{proxy_addr: login}}}
+{{{proxy_addr: ""}}}
 
-{{{proxy_port: login}}}
+{{{proxy_port: 0}}}
 
 Whereas:
 
