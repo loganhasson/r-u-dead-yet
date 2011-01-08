@@ -14,7 +14,7 @@ and keeps session persistence using cookies, if available.
 
 R.U.D.Y requires the following includes to be present under the same directory:
 
-http://http://www.crummy.com/software/BeautifulSoup
+http://www.crummy.com/software/BeautifulSoup
 
 http://socksipy.sourceforge.net
 
