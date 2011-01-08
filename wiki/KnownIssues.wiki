@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary This is the first place to see bug-fixes
 
 = Known Issues =
 
