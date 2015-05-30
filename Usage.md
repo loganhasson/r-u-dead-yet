@@ -1,0 +1,56 @@
+# Introduction #
+
+R-U-Dead-Yet is works in one of two modes:
+
+  1. Interactive menu mode
+  1. Unattended configuration-based execution
+
+It supports the usage of SOCKS proxies to mask the attacker,
+and keeps session persistence using cookies, if available.
+
+# Requirements #
+
+R.U.D.Y requires the following includes to be present under the same directory:
+
+http://www.crummy.com/software/BeautifulSoup
+
+http://socksipy.sourceforge.net
+
+# Details #
+
+In order to run using the first mode, run as following:
+
+r-u-dead-yet.py **URL**
+
+whereas **URL** is the FQDN link leading to a web page containing a web form to attack. r-u-dead-yet will take care of the rest of the procedure allowing the user to pick what form to attack, what field, and with how many concurrent connections.
+
+In the unattended mode, you will need to place a file called:
+
+rudeadyet.conf
+
+in the same directory as the code.
+The file should look like this:
+
+`[parameters]`
+
+`URL: http://www.victim.com/path-to-post-url.php`
+
+`number_of_connections: 500`
+
+`attack_parameter: login`
+
+`proxy_addr: ""`
+
+`proxy_port: 0`
+
+Whereas:
+
+**URL** = POST URL
+
+**number\_of\_connections** = concurrent processes to execute
+
+**attack\_parameter** = POST parameter to fuzz
+
+**proxy\_addr** = SOCKS4 proxy IP address
+
+**proxy\_port** = SOCKS4 proxy TCP port
